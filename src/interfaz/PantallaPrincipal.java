@@ -185,7 +185,7 @@ public class PantallaPrincipal extends JFrame {
         Image imagenEscalada = imagen.getScaledInstance(nuevoAncho,nuevoAlto,Image.SCALE_SMOOTH);
 
         etiqueta.setText("");
-        etiqueta.setIcon(new ImageIcon(imagenEscalada));
+        EfectoHover.aplicar(etiqueta, imagenEscalada);
     }
 
     private void abrirLogin() {

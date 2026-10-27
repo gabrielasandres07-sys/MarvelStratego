@@ -10,6 +10,7 @@ package interfaz;
 
 
 
+import excepciones.CredencialesInvalidasException;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
@@ -21,6 +22,7 @@ import java.net.URL;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -28,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import modelo.GestorJugadores;
 
 public class Login extends JFrame {
 
@@ -43,6 +46,7 @@ public class Login extends JFrame {
 
     private JTextField txtUsername;
     private JPasswordField txtPassword;
+    private JCheckBox chkMostrar;
 
     private JButton btnIngresar;
     private JButton btnVolver;
@@ -100,7 +104,7 @@ public class Login extends JFrame {
                 if (imagenFondo != null) {
                     g2.drawImage(imagenFondo, 0, 0, getWidth(), getHeight(), this);
                 } else {
-                    g2.setColor(new Color(12, 12, 12));
+                    g2.setColor(new Color(10, 15, 30));
                     g2.fillRect(0, 0, getWidth(), getHeight());
                 }
 
@@ -142,7 +146,10 @@ public class Login extends JFrame {
         panelLogin.add(lblUsername);
 
         txtUsername = new JTextField();
-        configurarCampo(txtUsername);
+        txtUsername.setFont(new Font("Arial", Font.PLAIN, 16));
+        txtUsername.setBackground(new Color(235, 240, 248));
+        txtUsername.setForeground(new Color(20, 25, 35));
+        txtUsername.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
         panelLogin.add(txtUsername);
 
         lblPassword = new JLabel("CONTRASEÑA");
@@ -151,15 +158,21 @@ public class Login extends JFrame {
         panelLogin.add(lblPassword);
 
         txtPassword = new JPasswordField();
-        configurarCampo(txtPassword);
+        txtPassword.setFont(new Font("Arial", Font.PLAIN, 16));
+        txtPassword.setBackground(new Color(235, 240, 248));
+        txtPassword.setForeground(new Color(20, 25, 35));
+        txtPassword.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
         panelLogin.add(txtPassword);
 
+        chkMostrar = UtilPassword.crearMostrar(txtPassword, Color.WHITE);
+        panelLogin.add(chkMostrar);
+
         btnIngresar = new JButton();
-        configurarBotonImagen(btnIngresar, "LOG IN");
+        configurarBotonImagen(btnIngresar);
         panelLogin.add(btnIngresar);
 
         btnVolver = new JButton();
-        configurarBotonImagen(btnVolver, "VOLVER");
+        configurarBotonImagen(btnVolver);
         panelLogin.add(btnVolver);
 
         btnIngresar.addActionListener(e -> validarCredenciales());
@@ -168,15 +181,9 @@ public class Login extends JFrame {
         btnVolver.addActionListener(e -> volverInicio());
     }
 
-    private void configurarCampo(JTextField campo) {
-        campo.setFont(new Font("Arial", Font.PLAIN, 16));
-        campo.setBackground(new Color(235, 240, 248));
-        campo.setForeground(new Color(20, 25, 35));
-        campo.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
-    }
+    private void configurarBotonImagen(JButton boton) {
 
-    private void configurarBotonImagen(JButton boton, String texto) {
-        boton.setText(texto);
+        boton.setText("");
         boton.setFont(new Font("Arial", Font.BOLD, 13));
         boton.setForeground(Color.WHITE);
         boton.setFocusPainted(false);
@@ -201,7 +208,7 @@ public class Login extends JFrame {
         }
 
         int anchoPanel = 390;
-        int altoPanel = 300;
+        int altoPanel = 320;
 
         int x = (ancho - anchoPanel) / 2;
         int y = (alto - altoPanel) / 2 + 40;
@@ -216,8 +223,10 @@ public class Login extends JFrame {
         lblPassword.setBounds(xInterior, 105, anchoInterior, 25);
         txtPassword.setBounds(xInterior, 133, anchoInterior, 42);
 
-        btnIngresar.setBounds(xInterior + 55, 195, 210, 45);
-        btnVolver.setBounds(xInterior + 55, 250, 210, 45);
+        chkMostrar.setBounds(xInterior, 180, anchoInterior, 22);
+
+        btnIngresar.setBounds(xInterior + 55, 210, 210, 45);
+        btnVolver.setBounds(xInterior + 55, 265, 210, 45);
 
         actualizarImagenBoton(btnIngresar, imagenBtnLogin);
         actualizarImagenBoton(btnVolver, imagenBtnBack);
@@ -225,33 +234,34 @@ public class Login extends JFrame {
 
     private void actualizarImagenBoton(JButton boton, Image imagen) {
 
-        if (imagen == null) {
-            return;
+        if (imagen != null) {
+
+            int anchoMaximo = boton.getWidth();
+            int altoMaximo = boton.getHeight();
+
+            int anchoOriginal = imagen.getWidth(null);
+            int altoOriginal = imagen.getHeight(null);
+
+            if (anchoOriginal <= 0 || altoOriginal <= 0) {
+                return;
+            }
+
+            double escala = Math.min(
+                (double) anchoMaximo / anchoOriginal,
+                (double) altoMaximo / altoOriginal
+            );
+
+            int nuevoAncho = Math.max(1, (int) Math.round(anchoOriginal * escala));
+            int nuevoAlto = Math.max(1, (int) Math.round(altoOriginal * escala));
+
+            Image imagenEscalada = imagen.getScaledInstance(
+                nuevoAncho,
+                nuevoAlto,
+                Image.SCALE_SMOOTH
+            );
+
+            EfectoHover.aplicar(boton, imagenEscalada);
         }
-
-        int anchoOriginal = imagen.getWidth(null);
-        int altoOriginal = imagen.getHeight(null);
-
-        if (anchoOriginal <= 0 || altoOriginal <= 0) {
-            return;
-        }
-
-        double escala = Math.min(
-            (double) boton.getWidth() / anchoOriginal,
-            (double) boton.getHeight() / altoOriginal
-        );
-
-        int nuevoAncho = Math.max(1, (int) Math.round(anchoOriginal * escala));
-        int nuevoAlto = Math.max(1, (int) Math.round(altoOriginal * escala));
-
-        Image imagenEscalada = imagen.getScaledInstance(
-            nuevoAncho,
-            nuevoAlto,
-            Image.SCALE_SMOOTH
-        );
-
-        boton.setText("");
-        EfectoHover.aplicar(boton, imagenEscalada);
     }
 
     private void validarCredenciales() {
@@ -260,22 +270,43 @@ public class Login extends JFrame {
         String password = new String(txtPassword.getPassword());
 
         if (username.isEmpty() || password.isEmpty()) {
+
             JOptionPane.showMessageDialog(
                 this,
                 "Ingresá tu usuario y tu contraseña.",
                 "Campos incompletos",
                 JOptionPane.WARNING_MESSAGE
             );
+
             return;
         }
 
-        // PENDIENTE, q se valide el usuario  y abrir el Menú Principal
-        JOptionPane.showMessageDialog(
-            this,
-            "El inicio de sesión todavía no está disponible.",
-            "Login",
-            JOptionPane.INFORMATION_MESSAGE
-        );
+        try {
+
+            GestorJugadores.iniciarSesion(username, password);
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Inicio de sesión exitoso.",
+                "Bienvenido",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+            // PENDIENTE de entrar a memu principal
+            volverInicio();
+
+        } catch (CredencialesInvalidasException ex) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                ex.getMessage(),
+                "Error de inicio de sesión",
+                JOptionPane.ERROR_MESSAGE
+            );
+
+            txtPassword.setText("");
+            txtPassword.requestFocusInWindow();
+        }
     }
 
     private void volverInicio() {

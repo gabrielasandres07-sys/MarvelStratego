@@ -9,7 +9,8 @@ package interfaz;
  * @author USER
  */
 
-
+import excepciones.PasswordInvalidoException;
+import excepciones.UsuarioDuplicadoException;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
@@ -21,6 +22,7 @@ import java.net.URL;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -28,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import modelo.GestorJugadores;
 
 public class CreatePlayer extends JFrame {
 
@@ -43,7 +46,7 @@ public class CreatePlayer extends JFrame {
 
     private JTextField txtUsername;
     private JPasswordField txtPassword;
-
+    private JCheckBox chkMostrar;
     private JButton btnCrear;
     private JButton btnVolver;
 
@@ -100,7 +103,7 @@ public class CreatePlayer extends JFrame {
                 if (imagenFondo != null) {
                     g2.drawImage(imagenFondo, 0, 0, getWidth(), getHeight(), this);
                 } else {
-                    g2.setColor(new Color(12, 12, 12));
+                    g2.setColor(new Color(10, 15, 30));
                     g2.fillRect(0, 0, getWidth(), getHeight());
                 }
 
@@ -147,6 +150,9 @@ public class CreatePlayer extends JFrame {
         txtPassword = new JPasswordField();
         configurarCampo(txtPassword);
         panelFormulario.add(txtPassword);
+
+        chkMostrar = UtilPassword.crearMostrar(txtPassword, Color.WHITE);
+        panelFormulario.add(chkMostrar);
 
         btnCrear = new JButton();
         configurarBotonImagen(btnCrear, "CREAR");
@@ -202,7 +208,7 @@ public class CreatePlayer extends JFrame {
         }
 
         int anchoPanel = 390;
-        int altoPanel = 300;
+        int altoPanel = 320;
 
         int x = (ancho - anchoPanel) / 2;
         int y = (alto - altoPanel) / 2 + 40;
@@ -217,8 +223,10 @@ public class CreatePlayer extends JFrame {
         lblPassword.setBounds(xInterior, 105, anchoInterior, 25);
         txtPassword.setBounds(xInterior, 133, anchoInterior, 42);
 
-        btnCrear.setBounds(xInterior + 55, 195, 210, 45);
-        btnVolver.setBounds(xInterior + 55, 250, 210, 45);
+        chkMostrar.setBounds(xInterior, 180, anchoInterior, 22);
+
+        btnCrear.setBounds(xInterior + 55, 210, 210, 45);
+        btnVolver.setBounds(xInterior + 55, 265, 210, 45);
 
         actualizarImagenBoton(btnCrear, imagenBtnCrear);
         actualizarImagenBoton(btnVolver, imagenBtnBack);
@@ -270,25 +278,44 @@ public class CreatePlayer extends JFrame {
             return;
         }
 
-        if (password.length() != 5) {
+        try {
+
+            GestorJugadores.registrar(username, password);
+
             JOptionPane.showMessageDialog(
                 this,
-                "La contraseña debe tener exactamente 5 caracteres.",
+                "Player \"" + username + "\" creado correctamente.",
+                "Player creado",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+
+            // PENDIENTE de entrar a menu prinicpal
+            volverInicio();
+
+        } catch (UsuarioDuplicadoException ex) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                ex.getMessage(),
+                "Usuario no disponible",
+                JOptionPane.ERROR_MESSAGE
+            );
+
+            txtUsername.selectAll();
+            txtUsername.requestFocusInWindow();
+
+        } catch (PasswordInvalidoException ex) {
+
+            JOptionPane.showMessageDialog(
+                this,
+                ex.getMessage(),
                 "Contraseña inválida",
                 JOptionPane.ERROR_MESSAGE
             );
+
             txtPassword.setText("");
             txtPassword.requestFocusInWindow();
-            return;
         }
-
-        // PENDIENTE que se guarde el jugador  y abrir el Menú Principal
-        JOptionPane.showMessageDialog(
-            this,
-            "La creación de jugadores todavía no está disponible.",
-            "Crear Player",
-            JOptionPane.INFORMATION_MESSAGE
-        );
     }
 
     private void volverInicio() {

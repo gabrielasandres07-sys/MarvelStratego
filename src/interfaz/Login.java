@@ -3,12 +3,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package interfaz;
+
 /**
  *
  * @author USER
  */
-
-
 
 import excepciones.CredencialesInvalidasException;
 import java.awt.Color;
@@ -96,10 +95,7 @@ public class Login extends JFrame {
 
                 Graphics2D g2 = (Graphics2D) g.create();
 
-                g2.setRenderingHint(
-                    RenderingHints.KEY_INTERPOLATION,
-                    RenderingHints.VALUE_INTERPOLATION_BILINEAR
-                );
+                g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR );
 
                 if (imagenFondo != null) {
                     g2.drawImage(imagenFondo, 0, 0, getWidth(), getHeight(), this);
@@ -254,11 +250,7 @@ public class Login extends JFrame {
             int nuevoAncho = Math.max(1, (int) Math.round(anchoOriginal * escala));
             int nuevoAlto = Math.max(1, (int) Math.round(altoOriginal * escala));
 
-            Image imagenEscalada = imagen.getScaledInstance(
-                nuevoAncho,
-                nuevoAlto,
-                Image.SCALE_SMOOTH
-            );
+            Image imagenEscalada = imagen.getScaledInstance(nuevoAncho, nuevoAlto, Image.SCALE_SMOOTH);
 
             EfectoHover.aplicar(boton, imagenEscalada);
         }
@@ -271,12 +263,7 @@ public class Login extends JFrame {
 
         if (username.isEmpty() || password.isEmpty()) {
 
-            JOptionPane.showMessageDialog(
-                this,
-                "Ingresá tu usuario y tu contraseña.",
-                "Campos incompletos",
-                JOptionPane.WARNING_MESSAGE
-            );
+            JOptionPane.showMessageDialog(this,"Ingresá tu usuario y tu contraseña.", "Campos incompletos",JOptionPane.WARNING_MESSAGE );
 
             return;
         }
@@ -285,24 +272,16 @@ public class Login extends JFrame {
 
             GestorJugadores.iniciarSesion(username, password);
 
-            JOptionPane.showMessageDialog(
-                this,
-                "Inicio de sesión exitoso.",
-                "Bienvenido",
-                JOptionPane.INFORMATION_MESSAGE
-            );
+            JOptionPane.showMessageDialog( this,"Inicio de sesión exitoso.", "Bienvenido",JOptionPane.INFORMATION_MESSAGE);
 
-            // PENDIENTE de entrar a memu principal
-            volverInicio();
+           
+            MenuPrincipal menu = new MenuPrincipal();
+            menu.setVisible(true);
+            dispose();
 
         } catch (CredencialesInvalidasException ex) {
 
-            JOptionPane.showMessageDialog(
-                this,
-                ex.getMessage(),
-                "Error de inicio de sesión",
-                JOptionPane.ERROR_MESSAGE
-            );
+            JOptionPane.showMessageDialog(this,ex.getMessage(),"Error de inicio de sesión", JOptionPane.ERROR_MESSAGE);
 
             txtPassword.setText("");
             txtPassword.requestFocusInWindow();

@@ -245,19 +245,12 @@ public class CreatePlayer extends JFrame {
             return;
         }
 
-        double escala = Math.min(
-            (double) boton.getWidth() / anchoOriginal,
-            (double) boton.getHeight() / altoOriginal
-        );
+        double escala = Math.min((double) boton.getWidth() / anchoOriginal,(double) boton.getHeight() / altoOriginal);
 
         int nuevoAncho = Math.max(1, (int) Math.round(anchoOriginal * escala));
         int nuevoAlto = Math.max(1, (int) Math.round(altoOriginal * escala));
 
-        Image imagenEscalada = imagen.getScaledInstance(
-            nuevoAncho,
-            nuevoAlto,
-            Image.SCALE_SMOOTH
-        );
+        Image imagenEscalada = imagen.getScaledInstance( nuevoAncho,nuevoAlto, Image.SCALE_SMOOTH);
 
         boton.setText("");
         EfectoHover.aplicar(boton, imagenEscalada);
@@ -269,12 +262,7 @@ public class CreatePlayer extends JFrame {
         String password = new String(txtPassword.getPassword());
 
         if (username.isEmpty()) {
-            JOptionPane.showMessageDialog(
-                this,
-                "Ingresá un usuario.",
-                "Campos incompletos",
-                JOptionPane.WARNING_MESSAGE
-            );
+            JOptionPane.showMessageDialog(this, "Ingresá un usuario.",  "Campos incompletos",JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -282,36 +270,22 @@ public class CreatePlayer extends JFrame {
 
             GestorJugadores.registrar(username, password);
 
-            JOptionPane.showMessageDialog(
-                this,
-                "Player \"" + username + "\" creado correctamente.",
-                "Player creado",
-                JOptionPane.INFORMATION_MESSAGE
-            );
+            JOptionPane.showMessageDialog( this, "Player \"" + username + "\" creado correctamente.","Player creado", JOptionPane.INFORMATION_MESSAGE);
 
-            // PENDIENTE de entrar a menu prinicpal
-            volverInicio();
+            MenuPrincipal menu = new MenuPrincipal();
+            menu.setVisible(true);
+            dispose();
 
         } catch (UsuarioDuplicadoException ex) {
 
-            JOptionPane.showMessageDialog(
-                this,
-                ex.getMessage(),
-                "Usuario no disponible",
-                JOptionPane.ERROR_MESSAGE
-            );
+            JOptionPane.showMessageDialog(this,ex.getMessage(),"Usuario no disponible",JOptionPane.ERROR_MESSAGE );
 
             txtUsername.selectAll();
             txtUsername.requestFocusInWindow();
 
         } catch (PasswordInvalidoException ex) {
 
-            JOptionPane.showMessageDialog(
-                this,
-                ex.getMessage(),
-                "Contraseña inválida",
-                JOptionPane.ERROR_MESSAGE
-            );
+            JOptionPane.showMessageDialog( this, ex.getMessage(),"Contraseña inválida",JOptionPane.ERROR_MESSAGE);
 
             txtPassword.setText("");
             txtPassword.requestFocusInWindow();

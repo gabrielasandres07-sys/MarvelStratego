@@ -18,7 +18,7 @@ import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-
+import javax.swing.JToggleButton;
 
 public final class EfectoHover {
 
@@ -27,11 +27,10 @@ public final class EfectoHover {
     private static final Color GRIS = new Color(205, 205, 205);
     private static final Color ROJO_OSCURO = new Color(170, 20, 28);
 
-   
+  
     private EfectoHover() {
     }
 
-   
     public static void aplicar(JButton boton, Image imagen) {
         boton.setIcon(new ImageIcon(imagen));
         boton.setRolloverIcon(recolorear(imagen, BLANCO, ROJO));
@@ -39,16 +38,24 @@ public final class EfectoHover {
         boton.setRolloverEnabled(true);
     }
 
-   
+ 
+    public static void aplicarOpcion(JToggleButton opcion, Image imagen) {
+        ImageIcon marcado = recolorear(imagen, BLANCO, ROJO);
+
+        opcion.setIcon(new ImageIcon(imagen));
+        opcion.setRolloverIcon(recolorear(imagen, GRIS, ROJO_OSCURO));
+        opcion.setSelectedIcon(marcado);
+        opcion.setRolloverSelectedIcon(marcado);
+        opcion.setRolloverEnabled(true);
+    }
+
     public static void aplicar(JLabel etiqueta, Image imagen) {
 
-       
         etiqueta.putClientProperty("iconoNormal", new ImageIcon(imagen));
         etiqueta.putClientProperty("iconoEncima", recolorear(imagen, BLANCO, ROJO));
         etiqueta.putClientProperty("iconoPresionado", recolorear(imagen, GRIS, ROJO_OSCURO));
         usarIcono(etiqueta, "iconoNormal");
 
-       
         if (etiqueta.getClientProperty("tieneEfecto") == null) {
             etiqueta.putClientProperty("tieneEfecto", true);
 
@@ -80,10 +87,7 @@ public final class EfectoHover {
         etiqueta.setIcon((ImageIcon) etiqueta.getClientProperty(clave));
     }
 
-    
     private static ImageIcon recolorear(Image imagen, Color fondo, Color texto) {
-
-        
         Image cargada = new ImageIcon(imagen).getImage();
         int ancho = cargada.getWidth(null);
         int alto = cargada.getHeight(null);
@@ -91,8 +95,6 @@ public final class EfectoHover {
         if (ancho <= 0 || alto <= 0) {
             return new ImageIcon(imagen);
         }
-
-       
         BufferedImage copia = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = copia.createGraphics();
         g2.drawImage(cargada, 0, 0, null);
@@ -103,10 +105,9 @@ public final class EfectoHover {
 
                 Color pixel = new Color(copia.getRGB(x, y), true);
 
-                
+            
                 float claridad = (pixel.getRed() + pixel.getGreen() + pixel.getBlue()) / (3f * 255);
 
-               
                 int r = mezclar(fondo.getRed(), texto.getRed(), claridad);
                 int g = mezclar(fondo.getGreen(), texto.getGreen(), claridad);
                 int b = mezclar(fondo.getBlue(), texto.getBlue(), claridad);

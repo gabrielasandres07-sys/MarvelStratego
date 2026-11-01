@@ -63,6 +63,8 @@ public class VentanaJuego extends JFrame {
     private int yFondo = 0;
 
     private Image imagenFondo;
+    private Image imagenOculta;
+    private ImageIcon iconoOculto;
     private CatalogoCartas catalogoCartas;
 
     
@@ -150,6 +152,7 @@ public class VentanaJuego extends JFrame {
 
     private void cargarImagenes() {
         imagenFondo = cargarImagen("fondo_tablero.png");
+        imagenOculta = cargarImagen("CartasTa/CartaOcultaTA.png");
     }
 
     private void crearInterfaz() {
@@ -268,6 +271,7 @@ public class VentanaJuego extends JFrame {
      
         if (ancho != anchoIconos || alto != altoIconos) {
             iconosEscalados.clear();
+            iconoOculto = null;
             anchoIconos = ancho;
             altoIconos = alto;
         }
@@ -276,7 +280,13 @@ public class VentanaJuego extends JFrame {
             for (int c = 0; c < Tablero.COLUMNAS; c++) {
 
                 Pieza pieza = tablero.obtenerPieza(f, c);
-                casillas[f][c].setIcon(pieza == null ? null : obtenerIcono(pieza));
+                if (pieza == null) {
+                    casillas[f][c].setIcon(null);
+                } else if (debeOcultarse(pieza)) {
+                    casillas[f][c].setIcon(obtenerIconoOculto());
+                } else {
+                    casillas[f][c].setIcon(obtenerIcono(pieza));
+                }
 
               
                 if (!tablero.esZonaProhibida(f, c)) {
@@ -288,6 +298,24 @@ public class VentanaJuego extends JFrame {
     }
 
  
+    private boolean debeOcultarse(Pieza pieza) {
+        return pieza.getBando() != turno && !pieza.isRevelada();
+    }
+
+    private ImageIcon obtenerIconoOculto() {
+        if (imagenOculta == null) {
+            return null;
+        }
+
+        if (iconoOculto == null) {
+            Image escalada = imagenOculta.getScaledInstance(
+                anchoIconos, altoIconos, Image.SCALE_SMOOTH);
+            iconoOculto = new ImageIcon(escalada);
+        }
+
+        return iconoOculto;
+    }
+
     private ImageIcon obtenerIcono(Pieza pieza) {
 
         
@@ -411,7 +439,10 @@ public class VentanaJuego extends JFrame {
 
     private void cambiarTurno() {
         turno = contrario(turno);
+        filaSeleccionada = -1;
+        columnaSeleccionada = -1;
         actualizarTurno();
+        refrescarTablero();
     }
 
     private void retirarse(Bando bando) {

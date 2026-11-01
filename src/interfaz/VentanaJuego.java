@@ -9,10 +9,9 @@ package interfaz;
  * @author USER
  */
 
-
-
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridLayout;
@@ -20,6 +19,8 @@ import java.awt.Image;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -32,38 +33,59 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
+import modelo.Bando;
+import modelo.Personaje;
+import modelo.Pieza;
+import modelo.PiezaMovil;
 import modelo.Tablero;
 
 public class VentanaJuego extends JFrame {
 
     private final Color azulPanel = new Color(8, 24, 48, 235);
 
-    
+   
     private final Border bordeNormal = BorderFactory.createLineBorder(new Color(235, 40, 55), 1);
     private final Border bordeSeleccion = BorderFactory.createLineBorder(Color.YELLOW, 3);
 
-  
+    
     private static final int ANCHO_IMAGEN = 1920;
     private static final int ALTO_IMAGEN = 1080;
     private static final int TABLERO_X = 467;
     private static final int TABLERO_Y = 80;
     private static final int TABLERO_LADO = 972;
+
     private double escalaFondo = 1;
     private int xFondo = 0;
     private int yFondo = 0;
+
     private Image imagenFondo;
+    private CatalogoCartas catalogoCartas;
+
+    
     private final Tablero tablero = new Tablero();
+
+   
     private final JButton[][] casillas = new JButton[Tablero.FILAS][Tablero.COLUMNAS];
     private JPanel panelTablero;
+
+    private final Map<String, ImageIcon> iconosEscalados = new HashMap<>();
+    private int anchoIconos = -1;
+    private int altoIconos = -1;
+
     private int filaSeleccionada = -1;
     private int columnaSeleccionada = -1;
+
     private JPanel panelFondo;
+
     private JPanel panelHeroes;
     private JPanel panelVillanos;
+
     private JPanel listaHeroesEliminados;
     private JPanel listaVillanosEliminados;
+
     private JScrollPane scrollHeroes;
     private JScrollPane scrollVillanos;
+
     private JLabel tituloHeroes;
     private JLabel tituloVillanos;
 
@@ -76,7 +98,39 @@ public class VentanaJuego extends JFrame {
         setLocationRelativeTo(null);
 
         cargarImagenes();
+        catalogoCartas = new CatalogoCartas();
+        colocarPiezasDePrueba();
         crearInterfaz();
+    }
+
+
+    private void colocarPiezasDePrueba() {
+        colocarBandoDePrueba(Bando.VILLANOS, 0);
+        colocarBandoDePrueba(Bando.HEROES, 6);
+    }
+
+    private void colocarBandoDePrueba(Bando bando, int filaInicial) {
+        int fila = filaInicial;
+        int columna = 0;
+
+        for (Personaje p : Personaje.values()) {
+
+            if (p.getBando() != bando) {
+                continue;
+            }
+
+       
+            for (int i = 0; i < p.getCantidad(); i++) {
+                tablero.colocarPieza(
+                    new PiezaMovil(p.getNombre(), p.getRango(), p.getBando()),fila,columna );
+
+                columna++;
+                if (columna == Tablero.COLUMNAS) {
+                    columna = 0;
+                    fila++;
+                }
+            }
+        }
     }
 
     private Image cargarImagen(String nombre) {
@@ -102,6 +156,7 @@ public class VentanaJuego extends JFrame {
                 g.setColor(new Color(12, 12, 12));
                 g.fillRect(0, 0, getWidth(), getHeight());
 
+                
                 if (imagenFondo != null) {
                     g.drawImage(imagenFondo, xFondo, yFondo,
                         (int) (ANCHO_IMAGEN * escalaFondo),
@@ -113,16 +168,19 @@ public class VentanaJuego extends JFrame {
 
         setContentPane(panelFondo);
 
+       
         panelTablero = crearTablero();
         panelFondo.add(panelTablero);
 
-     
+       
         panelHeroes = crearPanelLateral();
         tituloHeroes = crearTitulo("HÉROES ELIMINADOS", new Color(35, 125, 220));
         listaHeroesEliminados = crearLista();
         scrollHeroes = crearScroll(listaHeroesEliminados);
         panelHeroes.add(tituloHeroes);
         panelHeroes.add(scrollHeroes);
+
+     
         panelVillanos = crearPanelLateral();
         tituloVillanos = crearTitulo("VILLANOS ELIMINADOS", new Color(220, 45, 55));
         listaVillanosEliminados = crearLista();
@@ -142,6 +200,9 @@ public class VentanaJuego extends JFrame {
 
         SwingUtilities.invokeLater(this::ajustarElementos);
     }
+
+ 
+
     private JPanel crearTablero() {
 
         JPanel panel = new JPanel(new GridLayout(Tablero.FILAS, Tablero.COLUMNAS));
@@ -157,7 +218,7 @@ public class VentanaJuego extends JFrame {
                 boton.setBorder(bordeNormal);
 
                 if (tablero.esZonaProhibida(f, c)) {
-   
+                  
                     boton.setEnabled(false);
                 } else {
                     boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -176,10 +237,31 @@ public class VentanaJuego extends JFrame {
         return panel;
     }
 
+   
     private void refrescarTablero() {
+
+        JButton ejemplo = casillas[0][0];
+        int ancho = (int) (ejemplo.getWidth() * 0.85);
+        int alto = (int) (ejemplo.getHeight() * 0.85);
+
+        if (ancho <= 0 || alto <= 0) {
+            return;
+        }
+
+     
+        if (ancho != anchoIconos || alto != altoIconos) {
+            iconosEscalados.clear();
+            anchoIconos = ancho;
+            altoIconos = alto;
+        }
 
         for (int f = 0; f < Tablero.FILAS; f++) {
             for (int c = 0; c < Tablero.COLUMNAS; c++) {
+
+                Pieza pieza = tablero.obtenerPieza(f, c);
+                casillas[f][c].setIcon(pieza == null ? null : obtenerIcono(pieza));
+
+              
                 if (!tablero.esZonaProhibida(f, c)) {
                     boolean seleccionada = f == filaSeleccionada && c == columnaSeleccionada;
                     casillas[f][c].setBorder(seleccionada ? bordeSeleccion : bordeNormal);
@@ -188,8 +270,30 @@ public class VentanaJuego extends JFrame {
         }
     }
 
-   
+ 
+    private ImageIcon obtenerIcono(Pieza pieza) {
+
+        
+        String nombre = pieza.getBando() + ":" + pieza.getNombre();
+
+        if (!iconosEscalados.containsKey(nombre)) {
+            CartaTablero carta = catalogoCartas.obtener(pieza.getNombre(), pieza.getBando());
+
+            if (carta == null || carta.getImagen() == null) {
+                return null;
+            }
+
+            Image escalada = carta.getImagen().getScaledInstance(
+                anchoIconos, altoIconos, Image.SCALE_SMOOTH);
+            iconosEscalados.put(nombre, new ImageIcon(escalada));
+        }
+
+        return iconosEscalados.get(nombre);
+    }
+
+  
     private void clicCasilla(int fila, int columna) {
+
 
         if (fila == filaSeleccionada && columna == columnaSeleccionada) {
             filaSeleccionada = -1;
@@ -201,7 +305,6 @@ public class VentanaJuego extends JFrame {
 
         refrescarTablero();
     }
-
 
     private JPanel crearPanelLateral() {
         JPanel panel = new JPanel(null);
@@ -240,6 +343,70 @@ public class VentanaJuego extends JFrame {
         return scroll;
     }
 
+    public void agregarCartaEliminada(JPanel lista, Image imagen) {
+        if (lista == null || imagen == null) {
+            return;
+        }
+
+        JLabel carta = new JLabel();
+        carta.putClientProperty("imagenOriginal", imagen);
+        carta.setAlignmentX(CENTER_ALIGNMENT);
+        carta.setHorizontalAlignment(SwingConstants.CENTER);
+        carta.setBorder(BorderFactory.createEmptyBorder(2, 0, 4, 0));
+
+        actualizarCarta(carta, lista);
+
+        lista.add(carta);
+        lista.revalidate();
+        lista.repaint();
+    }
+
+    private void actualizarCarta(JLabel carta, JPanel lista) {
+        Object objeto = carta.getClientProperty("imagenOriginal");
+
+        if (!(objeto instanceof Image)) {
+            return;
+        }
+
+        Image original = (Image) objeto;
+
+        int ow = original.getWidth(null);
+        int oh = original.getHeight(null);
+
+        if (ow <= 0 || oh <= 0) {
+            return;
+        }
+
+        int anchoDisponible = Math.max(35, lista.getWidth() - 8);
+        int anchoCarta = Math.min(anchoDisponible, 72);
+        int altoCarta = Math.max(25, (int) (oh * anchoCarta / (double) ow));
+
+        Image escalada = original.getScaledInstance(anchoCarta, altoCarta, Image.SCALE_SMOOTH);
+
+        carta.setIcon(new ImageIcon(escalada));
+        carta.setPreferredSize(new Dimension(anchoCarta, altoCarta + 6));
+        carta.setMaximumSize(new Dimension(Integer.MAX_VALUE, altoCarta + 6));
+    }
+
+    private void actualizarCartas(JPanel lista) {
+        if (lista == null) {
+            return;
+        }
+
+        for (int i = 0; i < lista.getComponentCount(); i++) {
+            if (lista.getComponent(i) instanceof JLabel) {
+                JLabel carta = (JLabel) lista.getComponent(i);
+
+                if (carta.getClientProperty("imagenOriginal") != null) {
+                    actualizarCarta(carta, lista);
+                }
+            }
+        }
+
+        lista.revalidate();
+        lista.repaint();
+    }
+
     private void ajustarElementos() {
         if (panelFondo == null || panelTablero == null
                 || panelHeroes == null || panelVillanos == null) {
@@ -255,10 +422,15 @@ public class VentanaJuego extends JFrame {
 
       
         escalaFondo = Math.max((double) ancho / ANCHO_IMAGEN, (double) alto / 1028);
+
+    
         escalaFondo = Math.min(escalaFondo, (double) alto / TABLERO_LADO);
+
+  
         xFondo = (int) ((ancho - ANCHO_IMAGEN * escalaFondo) / 2);
         yFondo = (int) ((alto - TABLERO_LADO * escalaFondo) / 2 - TABLERO_Y * escalaFondo);
-        
+
+     
         int xTablero = xFondo + (int) (TABLERO_X * escalaFondo);
         int yTablero = yFondo + (int) (TABLERO_Y * escalaFondo);
         int anchoTablero = (int) (TABLERO_LADO * escalaFondo);
@@ -266,8 +438,10 @@ public class VentanaJuego extends JFrame {
 
         panelTablero.setBounds(xTablero, yTablero, anchoTablero, altoTablero);
 
+     
         panelTablero.doLayout();
         refrescarTablero();
+
         int margenExterior = 5;
         int separacionTablero = 24;
 
@@ -284,6 +458,7 @@ public class VentanaJuego extends JFrame {
             yPanel, anchoPanel, altoPanel
         );
 
+      
         int interno = 4;
         int anchoInterior = anchoPanel - interno * 2;
 
@@ -296,6 +471,9 @@ public class VentanaJuego extends JFrame {
 
         tituloVillanos.setBounds(interno, yTitulo, anchoInterior, altoTitulo);
         scrollVillanos.setBounds(interno, yCartas, anchoInterior, altoPanel - yCartas - 8);
+
+        actualizarCartas(listaHeroesEliminados);
+        actualizarCartas(listaVillanosEliminados);
 
         panelFondo.repaint();
     }

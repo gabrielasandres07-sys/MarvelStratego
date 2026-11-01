@@ -173,8 +173,10 @@ public class MenuPrincipal extends JFrame {
         if (!dialogo.isConfirmado()) {
             return; 
         }
+        Jugador rival = GestorJugadores.buscar(dialogo.getRival());
 
-        VentanaJuego juego = new VentanaJuego();
+
+        VentanaJuego juego = new VentanaJuego(jugador(), rival, dialogo.getBando());
         juego.setVisible(true);
     }
 
@@ -193,6 +195,7 @@ public class MenuPrincipal extends JFrame {
 
         if (dialogo.isCuentaEliminada()) {
             volverAlInicio();
+            
         }
     }
 

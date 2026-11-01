@@ -3,8 +3,8 @@ package modelo;
 
 public class Tierra extends Pieza {
 
-    public Tierra(Bando bando) {
-        super("Tierra", 0, bando);
+    public Tierra(String nombre, Bando bando) {
+        super(nombre, 0, bando);
     }
 
     @Override

@@ -19,6 +19,8 @@ import java.awt.Image;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.BorderFactory;
@@ -34,14 +36,16 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import modelo.Bando;
-import modelo.Personaje;
+import modelo.GestorJugadores;
 import modelo.Pieza;
-import modelo.PiezaMovil;
 import modelo.Tablero;
+import modelo.Jugador;
 
 public class VentanaJuego extends JFrame {
 
     private final Color azulPanel = new Color(8, 24, 48, 235);
+    private final Color azulHeroes = new Color(35, 125, 220);
+    private final Color rojoVillanos = new Color(220, 45, 55);
 
    
     private final Border bordeNormal = BorderFactory.createLineBorder(new Color(235, 40, 55), 1);
@@ -89,7 +93,32 @@ public class VentanaJuego extends JFrame {
     private JLabel tituloHeroes;
     private JLabel tituloVillanos;
 
-    public VentanaJuego() {
+    private JLabel infoHeroes;
+    private JLabel infoVillanos;
+
+    private JButton btnRetiroHeroes;
+    private JButton btnRetiroVillanos;
+
+    
+
+    private final Jugador jugador1;
+    private final Jugador jugador2;
+    private final Bando bandoJugador1;
+    private final Bando bandoJugador2;
+
+    private Bando turno = Bando.HEROES;
+
+    public VentanaJuego(Jugador jugador1, Jugador jugador2, Bando bandoJugador1) {
+        this.jugador1 = jugador1;
+        this.jugador2 = jugador2;
+        this.bandoJugador1 = bandoJugador1;
+
+        if (bandoJugador1 == Bando.HEROES) {
+            this.bandoJugador2 = Bando.VILLANOS;
+        } else {
+            this.bandoJugador2 = Bando.HEROES;
+        }
+
         setTitle("Marvel Stratego");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -99,38 +128,14 @@ public class VentanaJuego extends JFrame {
 
         cargarImagenes();
         catalogoCartas = new CatalogoCartas();
-        colocarPiezasDePrueba();
+        colocarPiezas();
         crearInterfaz();
     }
 
 
-    private void colocarPiezasDePrueba() {
-        colocarBandoDePrueba(Bando.VILLANOS, 0);
-        colocarBandoDePrueba(Bando.HEROES, 6);
-    }
-
-    private void colocarBandoDePrueba(Bando bando, int filaInicial) {
-        int fila = filaInicial;
-        int columna = 0;
-
-        for (Personaje p : Personaje.values()) {
-
-            if (p.getBando() != bando) {
-                continue;
-            }
-
-       
-            for (int i = 0; i < p.getCantidad(); i++) {
-                tablero.colocarPieza(
-                    new PiezaMovil(p.getNombre(), p.getRango(), p.getBando()),fila,columna );
-
-                columna++;
-                if (columna == Tablero.COLUMNAS) {
-                    columna = 0;
-                    fila++;
-                }
-            }
-        }
+    private void colocarPiezas() {
+        tablero.generarFormacion(Bando.VILLANOS);
+        tablero.generarFormacion(Bando.HEROES);
     }
 
     private Image cargarImagen(String nombre) {
@@ -174,7 +179,7 @@ public class VentanaJuego extends JFrame {
 
        
         panelHeroes = crearPanelLateral();
-        tituloHeroes = crearTitulo("HÉROES ELIMINADOS", new Color(35, 125, 220));
+        tituloHeroes = crearTitulo("HÉROES ELIMINADOS", azulHeroes);
         listaHeroesEliminados = crearLista();
         scrollHeroes = crearScroll(listaHeroesEliminados);
         panelHeroes.add(tituloHeroes);
@@ -182,7 +187,7 @@ public class VentanaJuego extends JFrame {
 
      
         panelVillanos = crearPanelLateral();
-        tituloVillanos = crearTitulo("VILLANOS ELIMINADOS", new Color(220, 45, 55));
+        tituloVillanos = crearTitulo("VILLANOS ELIMINADOS", rojoVillanos);
         listaVillanosEliminados = crearLista();
         scrollVillanos = crearScroll(listaVillanosEliminados);
         panelVillanos.add(tituloVillanos);
@@ -190,6 +195,18 @@ public class VentanaJuego extends JFrame {
 
         panelFondo.add(panelHeroes);
         panelFondo.add(panelVillanos);
+
+        infoHeroes = crearInfoJugador();
+        infoVillanos = crearInfoJugador();
+        btnRetiroHeroes = crearBotonRetiro(Bando.HEROES);
+        btnRetiroVillanos = crearBotonRetiro(Bando.VILLANOS);
+
+        panelFondo.add(infoHeroes);
+        panelFondo.add(infoVillanos);
+        panelFondo.add(btnRetiroHeroes);
+        panelFondo.add(btnRetiroVillanos);
+
+        actualizarTurno();
 
         panelFondo.addComponentListener(new ComponentAdapter() {
             @Override
@@ -304,6 +321,138 @@ public class VentanaJuego extends JFrame {
         }
 
         refrescarTablero();
+    }
+
+    private Jugador jugadorDe(Bando bando) {
+        if (bando == bandoJugador1) {
+            return jugador1;
+        }
+        return jugador2;
+    }
+
+    private Bando contrario(Bando bando) {
+        if (bando == Bando.HEROES) {
+            return Bando.VILLANOS;
+        }
+        return Bando.HEROES;
+    }
+
+    private String nombreBando(Bando bando) {
+        if (bando == Bando.HEROES) {
+            return "HÉROES";
+        }
+        return "VILLANOS";
+    }
+
+    private JLabel crearInfoJugador() {
+        JLabel etiqueta = new JLabel("", SwingConstants.CENTER);
+        etiqueta.setForeground(Color.WHITE);
+        etiqueta.setBackground(new Color(5, 17, 35));
+        etiqueta.setOpaque(true);
+        etiqueta.setFont(new Font("Arial", Font.BOLD, 13));
+        return etiqueta;
+    }
+
+    private JButton crearBotonRetiro(Bando bando) {
+        JButton boton = new JButton();
+        boton.setFocusPainted(false);
+        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        boton.addActionListener(e -> retirarse(bando));
+
+        Image imagen = DialogoMarvel.cargarImagenBoton("Retiro", 42);
+
+        if (imagen != null) {
+            boton.setContentAreaFilled(false);
+            boton.setBorderPainted(false);
+            boton.setOpaque(false);
+            boton.setBorder(null);
+            EfectoHover.aplicar(boton, imagen);
+        } else {
+            boton.setText("RETIRO");
+            boton.setFont(new Font("Arial Black", Font.PLAIN, 15));
+            boton.setForeground(DialogoMarvel.BLANCO);
+            boton.setBackground(DialogoMarvel.ROJO);
+            boton.setContentAreaFilled(false);
+            boton.setOpaque(true);
+            boton.setBorder(BorderFactory.createLineBorder(DialogoMarvel.NEGRO, 2));
+        }
+
+        return boton;
+    }
+
+    private void actualizarTurno() {
+        actualizarInfo(infoHeroes, Bando.HEROES, azulHeroes);
+        actualizarInfo(infoVillanos, Bando.VILLANOS, rojoVillanos);
+
+        btnRetiroHeroes.setVisible(turno == Bando.HEROES);
+        btnRetiroVillanos.setVisible(turno == Bando.VILLANOS);
+    }
+
+    private void actualizarInfo(JLabel etiqueta, Bando bando, Color colorBando) {
+        boolean activo = turno == bando;
+
+        String estado;
+        if (activo) {
+            estado = "<font color='#FFE600'>TU TURNO</font>";
+        } else {
+            estado = "<font color='#9AA5B5'>ESPERANDO</font>";
+        }
+
+        etiqueta.setText("<html><center>" + nombreBando(bando)
+            + "<br><font size='5'>" + jugadorDe(bando).getUsername() + "</font>"
+            + "<br>" + estado + "</center></html>");
+
+        if (activo) {
+            etiqueta.setBorder(BorderFactory.createLineBorder(Color.YELLOW, 3));
+        } else {
+            etiqueta.setBorder(BorderFactory.createLineBorder(colorBando, 2));
+        }
+    }
+
+    private void cambiarTurno() {
+        turno = contrario(turno);
+        actualizarTurno();
+    }
+
+    private void retirarse(Bando bando) {
+        Jugador perdedor = jugadorDe(bando);
+        Bando bandoGanador = contrario(bando);
+        Jugador ganador = jugadorDe(bandoGanador);
+
+        boolean confirmado = DialogoMarvel.confirmar(this, "Retiro",
+            "¿Seguro que querés retirarte? " + ganador.getUsername() + " ganará la partida.");
+
+        if (!confirmado) {
+            return;
+        }
+
+        String log = ganador.getUsername() + " usando " + nombreBando(bandoGanador)
+            + " ha ganado ya que " + perdedor.getUsername() + " usando " + nombreBando(bando)
+            + " se ha retirado del juego — " + fechaDeHoy();
+
+        terminarPartida(bandoGanador, log);
+    }
+
+    private void terminarPartida(Bando bandoGanador, String log) {
+        Jugador ganador = jugadorDe(bandoGanador);
+
+        ganador.sumarPuntos(3);
+
+        jugador1.sumarPartida(bandoJugador1);
+        jugador2.sumarPartida(bandoJugador2);
+
+        jugador1.agregarLog(log);
+        jugador2.agregarLog(log);
+
+        GestorJugadores.registrarPartida(bandoGanador);
+
+        DialogoMarvel.mensaje(this, "Fin de la partida", log);
+
+        dispose();
+    }
+
+    private String fechaDeHoy() {
+        return LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
     }
 
     private JPanel crearPanelLateral() {
@@ -444,19 +593,30 @@ public class VentanaJuego extends JFrame {
 
         int margenExterior = 5;
         int separacionTablero = 24;
+        int espacio = 8;
 
         int anchoPanel = Math.max(75, (int) (ancho * 0.105));
-        int altoPanel = (int) (alto * 0.78);
-        int yPanel = (alto - altoPanel) / 2;
 
-        int xHeroes = xTablero - anchoPanel - separacionTablero - 15;
-        int xVillanos = xTablero + anchoTablero + separacionTablero + 10;
+        int xHeroes = Math.max(margenExterior, xTablero - anchoPanel - separacionTablero - 15);
+        int xVillanos = Math.min(ancho - anchoPanel - margenExterior,
+            xTablero + anchoTablero + separacionTablero + 10);
 
-        panelHeroes.setBounds(Math.max(margenExterior, xHeroes), yPanel, anchoPanel, altoPanel);
-        panelVillanos.setBounds(
-            Math.min(ancho - anchoPanel - margenExterior, xVillanos),
-            yPanel, anchoPanel, altoPanel
-        );
+        int altoInfo = 84;
+        int altoRetiro = 42;
+
+        int yInfo = yTablero + 5;
+        int yRetiro = yTablero + altoTablero - 5 - altoRetiro;
+        int yPanel = yInfo + altoInfo + espacio;
+        int altoPanel = yRetiro - espacio - yPanel;
+
+        infoHeroes.setBounds(xHeroes, yInfo, anchoPanel, altoInfo);
+        infoVillanos.setBounds(xVillanos, yInfo, anchoPanel, altoInfo);
+
+        panelHeroes.setBounds(xHeroes, yPanel, anchoPanel, altoPanel);
+        panelVillanos.setBounds(xVillanos, yPanel, anchoPanel, altoPanel);
+
+        btnRetiroHeroes.setBounds(xHeroes, yRetiro, anchoPanel, altoRetiro);
+        btnRetiroVillanos.setBounds(xVillanos, yRetiro, anchoPanel, altoRetiro);
 
       
         int interno = 4;

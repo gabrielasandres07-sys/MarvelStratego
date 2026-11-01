@@ -3,8 +3,8 @@ package modelo;
 
 public class Bomba extends Pieza {
 
-    public Bomba(Bando bando) {
-        super("Bomba", 0, bando);
+    public Bomba(String nombre, Bando bando) {
+        super(nombre, 0, bando);
     }
 
     @Override

@@ -29,7 +29,6 @@ public class CartaTablero {
         if (url != null) {
             this.imagen = new ImageIcon(url).getImage();
         } else {
-            System.err.println("No se encontró la imagen: " + rutaImagen);
             this.imagen = null;
         }
     }

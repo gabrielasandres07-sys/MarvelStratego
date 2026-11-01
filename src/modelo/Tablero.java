@@ -138,6 +138,21 @@ public class Tablero {
         return casillas[fila][columna] == null && !esZonaProhibida(fila, columna);
     }
 
+    public boolean esMovimientoValido(int filaOrigen, int columnaOrigen,
+                                      int filaDestino, int columnaDestino) {
+
+        Pieza pieza = obtenerPieza(filaOrigen, columnaOrigen);
+
+        if (pieza == null || !pieza.puedeMoverse()) {
+            return false;
+        }
+
+        int distancia = Math.abs(filaOrigen - filaDestino)
+                + Math.abs(columnaOrigen - columnaDestino);
+
+        return distancia == 1 && estaVacia(filaDestino, columnaDestino);
+    }
+
     public void moverPieza(int filaOrigen, int columnaOrigen,
                            int filaDestino, int columnaDestino) {
 

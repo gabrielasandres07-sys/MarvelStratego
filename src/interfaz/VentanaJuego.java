@@ -339,16 +339,29 @@ public class VentanaJuego extends JFrame {
   
     private void clicCasilla(int fila, int columna) {
 
+        Pieza pieza = tablero.obtenerPieza(fila, columna);
 
-        if (fila == filaSeleccionada && columna == columnaSeleccionada) {
-            filaSeleccionada = -1;
-            columnaSeleccionada = -1;
-        } else {
-            filaSeleccionada = fila;
-            columnaSeleccionada = columna;
+        if (pieza != null && pieza.getBando() == turno) {
+            if (fila == filaSeleccionada && columna == columnaSeleccionada) {
+                filaSeleccionada = -1;
+                columnaSeleccionada = -1;
+            } else if (pieza.puedeMoverse()) {
+                filaSeleccionada = fila;
+                columnaSeleccionada = columna;
+            }
+
+            refrescarTablero();
+            return;
         }
 
-        refrescarTablero();
+        if (filaSeleccionada == -1) {
+            return;
+        }
+
+        if (tablero.esMovimientoValido(filaSeleccionada, columnaSeleccionada, fila, columna)) {
+            tablero.moverPieza(filaSeleccionada, columnaSeleccionada, fila, columna);
+            cambiarTurno();
+        }
     }
 
     private Jugador jugadorDe(Bando bando) {

@@ -11,4 +11,13 @@ public class Bomba extends Pieza {
     public boolean puedeMoverse() {
         return false;
     }
+
+    @Override
+    public ResultadoCombate recibirAtaque(Pieza atacante) {
+        if (atacante.getRango() == 3) {
+            return ResultadoCombate.GANA;
+        }
+
+        return ResultadoCombate.PIERDE;
+    }
 }

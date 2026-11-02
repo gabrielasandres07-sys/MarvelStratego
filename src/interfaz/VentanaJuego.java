@@ -38,7 +38,9 @@ import javax.swing.border.Border;
 import modelo.Bando;
 import modelo.GestorJugadores;
 import modelo.Pieza;
+import modelo.ResultadoCombate;
 import modelo.Tablero;
+import modelo.Tierra;
 import modelo.Jugador;
 
 public class VentanaJuego extends JFrame {
@@ -358,10 +360,85 @@ public class VentanaJuego extends JFrame {
             return;
         }
 
+        if (tablero.esAtaqueValido(filaSeleccionada, columnaSeleccionada, fila, columna)) {
+            atacar(fila, columna);
+            return;
+        }
+
         if (tablero.esMovimientoValido(filaSeleccionada, columnaSeleccionada, fila, columna)) {
             tablero.moverPieza(filaSeleccionada, columnaSeleccionada, fila, columna);
             cambiarTurno();
         }
+    }
+
+    private void atacar(int fila, int columna) {
+        Pieza atacante = tablero.obtenerPieza(filaSeleccionada, columnaSeleccionada);
+        Pieza defensor = tablero.obtenerPieza(fila, columna);
+
+        ResultadoCombate resultado = tablero.atacar(filaSeleccionada, columnaSeleccionada, fila, columna);
+
+        String texto = atacante.getNombre() + " (" + atacante.getRango() + ") atacó a "
+            + defensor.getNombre() + " (" + defensor.getRango() + "). ";
+
+        switch (resultado) {
+            case GANA:
+                eliminarPieza(defensor);
+                texto += atacante.getNombre() + " gana.";
+                break;
+            case PIERDE:
+                eliminarPieza(atacante);
+                texto += defensor.getNombre() + " gana.";
+                break;
+            case EMPATE:
+                eliminarPieza(atacante);
+                eliminarPieza(defensor);
+                texto += "Empate: las dos piezas son eliminadas.";
+                break;
+        }
+
+        filaSeleccionada = -1;
+        columnaSeleccionada = -1;
+        refrescarTablero();
+
+        if (defensor instanceof Tierra && resultado == ResultadoCombate.GANA) {
+            capturarTierra(atacante.getBando());
+            return;
+        }
+
+        DialogoMarvel.mensaje(this, "Combate", texto);
+        cambiarTurno();
+    }
+
+    private void eliminarPieza(Pieza pieza) {
+        CartaTablero carta = catalogoCartas.obtener(pieza.getNombre(), pieza.getBando());
+
+        if (carta == null) {
+            return;
+        }
+
+        if (pieza.getBando() == Bando.HEROES) {
+            agregarCartaEliminada(listaHeroesEliminados, carta.getImagen());
+        } else {
+            agregarCartaEliminada(listaVillanosEliminados, carta.getImagen());
+        }
+    }
+
+    private void capturarTierra(Bando bandoGanador) {
+        Jugador ganador = jugadorDe(bandoGanador);
+        Jugador perdedor = jugadorDe(contrario(bandoGanador));
+
+        String accion;
+        if (bandoGanador == Bando.HEROES) {
+            accion = "SALVADO";
+        } else {
+            accion = "CAPTURADO";
+        }
+
+        String log = ganador.getUsername() + " usando " + nombreBando(bandoGanador)
+            + " ha " + accion + " la TIERRA! Venciendo a " + perdedor.getUsername()
+            + " — " + fechaDeHoy();
+
+        terminarPartida(bandoGanador, log);
     }
 
     private Jugador jugadorDe(Bando bando) {

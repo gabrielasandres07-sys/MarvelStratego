@@ -11,4 +11,9 @@ public class Tierra extends Pieza {
     public boolean puedeMoverse() {
         return false;
     }
+
+    @Override
+    public ResultadoCombate recibirAtaque(Pieza atacante) {
+        return ResultadoCombate.GANA;
+    }
 }

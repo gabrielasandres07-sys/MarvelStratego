@@ -153,6 +153,54 @@ public class Tablero {
         return distancia == 1 && estaVacia(filaDestino, columnaDestino);
     }
 
+    public boolean esAtaqueValido(int filaOrigen, int columnaOrigen,
+                                  int filaDestino, int columnaDestino) {
+
+        Pieza atacante = obtenerPieza(filaOrigen, columnaOrigen);
+        Pieza defensor = obtenerPieza(filaDestino, columnaDestino);
+
+        if (atacante == null || defensor == null || !atacante.puedeMoverse()) {
+            return false;
+        }
+
+        if (atacante.getBando() == defensor.getBando()) {
+            return false;
+        }
+
+        int distancia = Math.abs(filaOrigen - filaDestino)
+                + Math.abs(columnaOrigen - columnaDestino);
+
+        return distancia == 1;
+    }
+
+    public ResultadoCombate atacar(int filaOrigen, int columnaOrigen,
+                                   int filaDestino, int columnaDestino) {
+
+        Pieza atacante = obtenerPieza(filaOrigen, columnaOrigen);
+        Pieza defensor = obtenerPieza(filaDestino, columnaDestino);
+
+        atacante.revelar();
+        defensor.revelar();
+
+        ResultadoCombate resultado = defensor.recibirAtaque(atacante);
+
+        switch (resultado) {
+            case GANA:
+                casillas[filaDestino][columnaDestino] = atacante;
+                casillas[filaOrigen][columnaOrigen] = null;
+                break;
+            case PIERDE:
+                casillas[filaOrigen][columnaOrigen] = null;
+                break;
+            case EMPATE:
+                casillas[filaOrigen][columnaOrigen] = null;
+                casillas[filaDestino][columnaDestino] = null;
+                break;
+        }
+
+        return resultado;
+    }
+
     public void moverPieza(int filaOrigen, int columnaOrigen,
                            int filaDestino, int columnaDestino) {
 

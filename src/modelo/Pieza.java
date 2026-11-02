@@ -1,7 +1,6 @@
-
 package modelo;
 
-public abstract class Pieza {
+public abstract class Pieza implements Movible, Atacable {
 
     private String nombre;
     private int rango;
@@ -35,5 +34,9 @@ public abstract class Pieza {
         revelada = true;
     }
 
+    @Override
     public abstract boolean puedeMoverse();
+
+    @Override
+    public abstract ResultadoCombate recibirAtaque(Pieza atacante);
 }

@@ -41,10 +41,5 @@ public class CartaTablero {
         return imagen;
     }
 
-    public void dibujar(Graphics2D g2,int x,int y,int ancho,int alto) {
-
-        if (imagen != null) {
-            g2.drawImage(imagen,x,y, ancho,alto, null);
-        }
-    }
+    
 }

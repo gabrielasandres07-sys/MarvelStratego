@@ -39,7 +39,5 @@ public class CatalogoCartas {
         return bando + ":" + nombre;
     }
 
-    public int cantidad() {
-        return cartas.size();
-    }
+    
 }

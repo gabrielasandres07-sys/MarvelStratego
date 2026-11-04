@@ -205,7 +205,7 @@ public class DialogoUniverso extends DialogoMarvel {
         agregar(partidas);
         agregarEspacio(20);
 
-        // Barra Héroes vs Villanos
+        
         agregar(crearSubtitulo("Héroes vs Villanos"));
         agregarEspacio(10);
         agregar(new BarraVictorias(heroes, villanos));

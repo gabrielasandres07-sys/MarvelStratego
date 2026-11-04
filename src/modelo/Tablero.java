@@ -150,7 +150,38 @@ public class Tablero {
         int distancia = Math.abs(filaOrigen - filaDestino)
                 + Math.abs(columnaOrigen - columnaDestino);
 
+        if (pieza.getRango() == 2) {
+            if (distancia == 0) {
+                return false;
+            }
+
+            if (filaOrigen != filaDestino && columnaOrigen != columnaDestino) {
+                return false;
+            }
+
+            int pasoFila = Integer.signum(filaDestino - filaOrigen);
+            int pasoColumna = Integer.signum(columnaDestino - columnaOrigen);
+
+            return caminoLibre(filaOrigen + pasoFila, columnaOrigen + pasoColumna,
+                    filaDestino, columnaDestino, pasoFila, pasoColumna);
+        }
+
         return distancia == 1 && estaVacia(filaDestino, columnaDestino);
+    }
+
+    private boolean caminoLibre(int fila, int columna, int filaDestino, int columnaDestino,
+                                int pasoFila, int pasoColumna) {
+
+        if (!estaVacia(fila, columna)) {
+            return false;
+        }
+
+        if (fila == filaDestino && columna == columnaDestino) {
+            return true;
+        }
+
+        return caminoLibre(fila + pasoFila, columna + pasoColumna,
+                filaDestino, columnaDestino, pasoFila, pasoColumna);
     }
 
     public boolean esAtaqueValido(int filaOrigen, int columnaOrigen,
@@ -219,6 +250,13 @@ public class Tablero {
 
         if (!estaVacia(filaDestino, columnaDestino)) {
             throw new IllegalArgumentException("El destino no está disponible.");
+        }
+
+        int distancia = Math.abs(filaOrigen - filaDestino)
+                + Math.abs(columnaOrigen - columnaDestino);
+
+        if (distancia > 1) {
+            pieza.revelar();
         }
 
         casillas[filaDestino][columnaDestino] = pieza;

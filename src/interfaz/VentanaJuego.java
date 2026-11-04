@@ -52,6 +52,12 @@ public class VentanaJuego extends JFrame {
    
     private final Border bordeNormal = BorderFactory.createLineBorder(new Color(235, 40, 55), 1);
     private final Border bordeSeleccion = BorderFactory.createLineBorder(Color.YELLOW, 3);
+    private final Border bordeMovimiento = BorderFactory.createLineBorder(new Color(60, 220, 90), 3);
+    private final Border bordeAtaque = BorderFactory.createLineBorder(new Color(255, 140, 0), 3);
+
+    private final Color capaBloqueada = new Color(20, 20, 20, 150);
+    private final Color capaMovimiento = new Color(60, 220, 90, 70);
+    private final Color capaAtaque = new Color(255, 140, 0, 90);
 
     
     private static final int ANCHO_IMAGEN = 1920;
@@ -233,7 +239,19 @@ public class VentanaJuego extends JFrame {
         for (int f = 0; f < Tablero.FILAS; f++) {
             for (int c = 0; c < Tablero.COLUMNAS; c++) {
 
-                JButton boton = new JButton();
+                JButton boton = new JButton() {
+                    @Override
+                    protected void paintComponent(Graphics g) {
+                        super.paintComponent(g);
+
+                        Object capa = getClientProperty("capa");
+
+                        if (capa instanceof Color) {
+                            g.setColor((Color) capa);
+                            g.fillRect(0, 0, getWidth(), getHeight());
+                        }
+                    }
+                };
                 boton.setFocusPainted(false);
                 boton.setContentAreaFilled(false);
                 boton.setOpaque(false);
@@ -291,12 +309,32 @@ public class VentanaJuego extends JFrame {
                 }
 
               
-                if (!tablero.esZonaProhibida(f, c)) {
-                    boolean seleccionada = f == filaSeleccionada && c == columnaSeleccionada;
-                    casillas[f][c].setBorder(seleccionada ? bordeSeleccion : bordeNormal);
-                }
+                marcarCasilla(f, c);
             }
         }
+    }
+
+    private void marcarCasilla(int fila, int columna) {
+        Border borde = bordeNormal;
+        Color capa = null;
+
+        if (filaSeleccionada != -1) {
+            if (fila == filaSeleccionada && columna == columnaSeleccionada) {
+                borde = bordeSeleccion;
+            } else if (tablero.esMovimientoValido(filaSeleccionada, columnaSeleccionada, fila, columna)) {
+                borde = bordeMovimiento;
+                capa = capaMovimiento;
+            } else if (tablero.esAtaqueValido(filaSeleccionada, columnaSeleccionada, fila, columna)) {
+                borde = bordeAtaque;
+                capa = capaAtaque;
+            } else {
+                capa = capaBloqueada;
+            }
+        }
+
+        casillas[fila][columna].setBorder(borde);
+        casillas[fila][columna].putClientProperty("capa", capa);
+        casillas[fila][columna].repaint();
     }
 
  

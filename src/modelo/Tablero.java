@@ -263,6 +263,39 @@ public class Tablero {
         casillas[filaOrigen][columnaOrigen] = null;
     }
 
+    public boolean tieneMovimientos(Bando bando) {
+        for (int f = 0; f < FILAS; f++) {
+            for (int c = 0; c < COLUMNAS; c++) {
+                Pieza pieza = casillas[f][c];
+
+                if (pieza != null && pieza.getBando() == bando && puedeJugar(f, c)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean puedeJugar(int fila, int columna) {
+        int[][] direcciones = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+        for (int[] d : direcciones) {
+            int f = fila + d[0];
+            int c = columna + d[1];
+
+            if (f < 0 || f >= FILAS || c < 0 || c >= COLUMNAS) {
+                continue;
+            }
+
+            if (esMovimientoValido(fila, columna, f, c) || esAtaqueValido(fila, columna, f, c)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private void validarPosicion(int fila, int columna) {
         if (fila < 0 || fila >= FILAS
                 || columna < 0 || columna >= COLUMNAS) {

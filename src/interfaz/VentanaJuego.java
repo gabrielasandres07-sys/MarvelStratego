@@ -571,6 +571,10 @@ public class VentanaJuego extends JFrame {
         columnaSeleccionada = -1;
         actualizarTurno();
         refrescarTablero();
+
+        if (!tablero.tieneMovimientos(turno)) {
+            sinMovimientos(turno);
+        }
     }
 
     private void retirarse(Bando bando) {
@@ -588,6 +592,18 @@ public class VentanaJuego extends JFrame {
         String log = ganador.getUsername() + " usando " + nombreBando(bandoGanador)
             + " ha ganado ya que " + perdedor.getUsername() + " usando " + nombreBando(bando)
             + " se ha retirado del juego — " + fechaDeHoy();
+
+        terminarPartida(bandoGanador, log);
+    }
+
+    private void sinMovimientos(Bando bando) {
+        Jugador perdedor = jugadorDe(bando);
+        Bando bandoGanador = contrario(bando);
+        Jugador ganador = jugadorDe(bandoGanador);
+
+        String log = perdedor.getUsername() + " usando " + nombreBando(bando)
+            + " ha perdido por no tener movimientos válidos disponibles ante "
+            + ganador.getUsername() + " — " + fechaDeHoy();
 
         terminarPartida(bandoGanador, log);
     }

@@ -281,9 +281,8 @@ public class VentanaJuego extends JFrame {
     private void refrescarTablero() {
 
         JButton ejemplo = casillas[0][0];
-        int ancho = (int) (ejemplo.getWidth() * 0.85);
-        int alto = (int) (ejemplo.getHeight() * 0.85);
-
+        int ancho = ejemplo.getWidth();
+        int alto = ejemplo.getHeight();
         if (ancho <= 0 || alto <= 0) {
             return;
         }

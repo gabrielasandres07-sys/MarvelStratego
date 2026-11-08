@@ -201,6 +201,18 @@ public class Tablero {
         int distancia = Math.abs(filaOrigen - filaDestino)
                 + Math.abs(columnaOrigen - columnaDestino);
 
+        if (atacante.getRango() == 2 && distancia > 1) {
+            if (filaOrigen != filaDestino && columnaOrigen != columnaDestino) {
+                return false;
+            }
+
+            int pasoFila = Integer.signum(filaDestino - filaOrigen);
+            int pasoColumna = Integer.signum(columnaDestino - columnaOrigen);
+
+            return caminoLibre(filaOrigen + pasoFila, columnaOrigen + pasoColumna,
+                    filaDestino - pasoFila, columnaDestino - pasoColumna, pasoFila, pasoColumna);
+        }
+
         return distancia == 1;
     }
 
